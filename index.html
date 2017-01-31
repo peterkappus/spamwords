@@ -1,0 +1,86 @@
+<html>
+<head>
+  <title>Spam Words</title>
+  <script src="jquery-1.11.3.min.js"></script>
+  <!--script src="ion.sound.min.js"></script-->
+  <script src="buzz.min.js"></script>
+  <script src="words.js"></script>
+  <script>
+  $(function(){
+    //CONSTANTS
+    fadeTime = 700;
+    holdTime = 3200;
+
+    words = words.split(",")
+    note_names = ["a", "asharp","b","c","csharp","d","dsharp","e","f","fsharp","g","gsharp","lowera","lowerb","lowerbflat","upperc"];
+
+    notes = [];
+    //setup sounds
+    for(i =0; i < note_names.length; i++){
+      notes.push(new buzz.sound( "notes/" + note_names[i], {formats:['mp3']}));
+    }
+
+    function fadeWords(){
+      for(i = 0; i < 4; i ++){
+        notes[Math.floor(Math.random()*notes.length)].play();
+      }
+      //pick words
+      left = words[Math.floor(Math.random()*words.length)]
+      right = words[Math.floor(Math.random()*words.length)]
+
+      //assign them
+      $('#left').html(left);
+      $('#right').html(right);
+      //fade 'em in
+      $('#left').animate({opacity:1},fadeTime);
+      $('#right').animate({opacity:1},fadeTime*1.1);
+
+      //wait a while, and fade 'em out
+      setTimeout(
+        function(){
+          $("#left").animate({opacity:0},fadeTime);
+          $("#right").animate({opacity:0},fadeTime);
+        },holdTime);
+    }
+    t = setInterval(fadeWords,holdTime+fadeTime);
+    fadeWords();
+  });
+  </script>
+  <style type="text/css">
+  body {
+    background: #000;
+    color: #fff;
+    font-family: helvetica, arial, sans-serif;
+  }
+  h1{
+    font-size: 4rem;
+    margin: 0;
+    padding: 0 .75rem;
+    display: inline;
+    font-weight: 300;
+    opacity: 0;
+  }
+  .right h1 {padding-left: .75rem}
+  .container {
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    height: 100%;
+    auto: auto 0;
+    text-align: center;
+  }
+  .vcenter{
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  </style>
+<body>
+  <div class="container">
+    <div class="vcenter">
+        <h1 id="left">Left</h1>
+        <h1 id="right">Right</h1>
+    </div>
+  </div>
+</body>
+</html>
