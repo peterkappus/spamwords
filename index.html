@@ -1,5 +1,10 @@
 <html>
 <head>
+  <style type="text/css">
+    .nocursor {
+      cursor: none;
+    }
+  </style>
   <title>Spam Words</title>
   <script src="jquery-1.11.3.min.js"></script>
   <!--script src="ion.sound.min.js"></script-->
@@ -8,18 +13,29 @@
   <script>
   $(function(){
     //CONSTANTS
-    fadeTime = 700;
-    holdTime = 3200;
-
+    fadeInTime = 500; 
+    fadeOutTime = 500; 
+    holdTime = 2800; //time to hold words on screen
+    pauseBetweenTime = 100; //time between word pairs (blank space)
     words = words.split(",")
     note_names = ["a", "asharp","b","c","csharp","d","dsharp","e","f","fsharp","g","gsharp","lowera","lowerb","lowerbflat","upperc"];
-
-    notes = [];
-    //setup sounds
-    for(i =0; i < note_names.length; i++){
-      notes.push(new buzz.sound( "notes/" + note_names[i], {formats:['mp3']}));
+    
+    window.initializeSounds = function() {
+      notes = [];
+      //setup sounds
+      for(i =0; i < note_names.length; i++){
+        notes.push(new buzz.sound( "notes/" + note_names[i], {formats:['mp3']}));
+      }
+      buzz.all().play();
+      //buzz.all().setVolume(0);
+      buzz.all().stop();
+      
+      /*setTimeout(function() {
+        buzz.all().setVolume(100);
+        fadeWords();
+      },2000);*/
     }
-
+    
     function fadeWords(){
       for(i = 0; i < 4; i ++){
         notes[Math.floor(Math.random()*notes.length)].play();
@@ -31,26 +47,105 @@
       //assign them
       $('#left').html(left);
       $('#right').html(right);
+      
       //fade 'em in
-      $('#left').animate({opacity:1},fadeTime);
-      $('#right').animate({opacity:1},fadeTime*1.1);
+      $('#left').animate({opacity:1},fadeInTime);
+      $('#right').animate({opacity:1},fadeInTime*1.2); //second word slightly slower
 
       //wait a while, and fade 'em out
       setTimeout(
         function(){
-          $("#left").animate({opacity:0},fadeTime);
-          $("#right").animate({opacity:0},fadeTime);
+          $("#left").animate({opacity:0},fadeOutTime);
+          $("#right").animate({opacity:0},fadeOutTime);
         },holdTime);
+        
     }
-    t = setInterval(fadeWords,holdTime+fadeTime);
-    fadeWords();
+    
+    window.start = function() {
+      //attempt to play all to initialise for mobile safari
+      initializeSounds();
+      
+      enterFullScreen();
+      
+      $("#start").fadeOut(fadeOutTime, function() {
+        $("#theBody").addClass("nocursor");
+        $("#start").click(null);
+        $("#container").click(stop);      
+
+        //set our timer for future calls
+        t = setInterval(fadeWords,holdTime+fadeInTime+fadeOutTime+pauseBetweenTime);
+        //make our first call
+        fadeWords();        
+      });
+    }
+    
+    
+    function stop() {
+      /*exitFullscreen();
+      clearTimeout(t);
+      $("#start").click(start);
+      $("#container").click(null);      
+
+      $("body").removeClass("nocursor");
+      $("#start").fadeIn();
+      
+      $("#left").hide();//animate({opacity:0},fadeOutTime);
+      $("#right").hide();//animate({opacity:0},fadeOutTime);
+      */
+      location.reload();
+      //history.go(0);
+    }
+
   });
+  
+  function enterFullScreen() {
+    //go fullscreen
+    var element = document.getElementById("theBody");
+    // Find the right method, call on correct element
+    if(element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if(element.mozRequestFullScreen) {
+      element.mozRequestFullScreen();
+    } else if(element.webkitRequestFullscreen) {
+      element.webkitRequestFullscreen();
+    } else if(element.msRequestFullscreen) {
+      element.msRequestFullscreen();
+    }
+  }
+  
+  function exitFullscreen() {
+    if(document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if(document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if(document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  }
+  /*
+  addEventListener("click", function() {
+      var el = document.documentElement,
+      rfs = el.requestFullscreen
+        || el.webkitRequestFullScreen
+        || el.mozRequestFullScreen
+        || el.msRequestFullscreen 
+    ;
+
+    rfs.call(el);
+  });
+  */
+  
   </script>
   <style type="text/css">
   body {
     background: #000;
     color: #fff;
     font-family: helvetica, arial, sans-serif;
+  }
+  h2#start a{
+    font-size: 120px;
+    text-decoration: none;
+    color: #fff;
   }
   h1{
     font-size: 4rem;
@@ -61,7 +156,7 @@
     opacity: 0;
   }
   .right h1 {padding-left: .75rem}
-  .container {
+  #container {
     -webkit-transform-style: preserve-3d;
     -moz-transform-style: preserve-3d;
     transform-style: preserve-3d;
@@ -75,11 +170,12 @@
     transform: translateY(-50%);
   }
   </style>
-<body>
-  <div class="container">
+<body id="theBody">
+  <div id="container">
     <div class="vcenter">
-        <h1 id="left">Left</h1>
-        <h1 id="right">Right</h1>
+      <h2 id="start"><a href="javascript:start();void(0)">Start</a></h2>
+      <h1 id="left">Left</h1>
+      <h1 id="right">Right</h1>
     </div>
   </div>
 </body>
